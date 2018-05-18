@@ -1,0 +1,13 @@
+# Requires a history of at least 55 candles
+
+# shortEMA size
+shortSize = 8
+
+# mediumEMA size
+mediumSize = 21
+
+# longEMA size
+longSize = 55
+
+
+
