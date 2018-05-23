@@ -5,3 +5,4 @@ A list of strategies I written up for the Gekko Trading Bot. These strategies ar
 Fibonacci Trendlines - A trading strategy that buys when 8 day and 21 day EMA is below the 55 day EMA 
 and sell when the 8 day and 21 day is above the 55.
 
+MACD Momentum - A trading strategy that tries to catch the bottom of the MACD curve and exits when MACD falls below 0. It is a WIP strategy and the code is extremely buggy (I gave up on perfecting when I saw how elegant the RSI Bull Bear strategy is) so it really should be use for references only. 
