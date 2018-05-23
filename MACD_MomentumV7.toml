@@ -1,0 +1,11 @@
+short = 12
+long = 26
+signal = 9
+
+[histogram]
+entryRange = 0.13
+exitRange = 0.01
+
+[macdReq]
+entryPoint = -0.2
+exitPoint = 0.1
