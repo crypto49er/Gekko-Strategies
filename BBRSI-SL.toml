@@ -1,0 +1,15 @@
+interval = 14
+
+[thresholds]
+low = 40
+high = 40
+persistence = 9
+
+[bbands]
+TimePeriod = 20
+NbDevUp = 2
+NbDevDn = 2
+
+#should be a number between 1 - 99
+[stoploss]
+percentage = 3
