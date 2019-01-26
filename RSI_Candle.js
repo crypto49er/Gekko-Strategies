@@ -16,12 +16,14 @@ var config = require ('../core/util.js').getConfig();
 
 const CandleBatcher = require('../core/candleBatcher');
 const RSI = require('../strategies/indicators/RSI.js');
+const SMA = require('../strategies/indicators/SMA.js');
 
 // Let's create our own strat
 var strat = {};
 var buyPrice = 0.0;
 var currentPrice = 0.0;
 var rsi5 = new RSI({ interval: 14 });
+var sma5 = new SMA(200);
 var advised = false;
 var rsi5History = [];
 var wait = 0;
@@ -29,6 +31,7 @@ var counter = 0;
 var disableTrading = false;
 var waitForRejectedRetry = 0;
 var priceHistory = [];
+var sma5History = [];
 var highestRSI = 0; // highestRSI in last 5 candles
 var candle5 = {};
 
@@ -79,6 +82,7 @@ strat.update = function(candle) {
 
 strat.update5 = function(candle) {
   rsi5.update(candle);
+  sma5.update(candle.close);
 
   candle5 = this.batcher5.calculatedCandles[0];
   //log.debug('5 minute candle.close ', candle5.close);
@@ -87,6 +91,12 @@ strat.update5 = function(candle) {
   priceHistory.push(candle.close);
   if (priceHistory.length > 10) {
     priceHistory.shift();
+  }
+
+  // Store the last three sma5 prices
+  sma5History.push(sma5.result);
+  if (sma5History.length > 3) {
+    sma5History.shift();
   }
 
   // We only need to store RSI for 10 candles
@@ -102,6 +112,8 @@ strat.update5 = function(candle) {
     }
   }
   
+  //Send price and RSI to console every 5 minutes
+  //log.info('Price', currentPrice, 'SMA', sma5.result, 'RSI', rsi5.result.toFixed(2));
 }
 
 // Based on the newly calculated
@@ -139,7 +151,7 @@ strat.check = function() {
 
   
   // //Buy when RSI < 30 and candle is a hammer
-  if (rsi5.result < 30 && (candle5.open - candle5.close)/(candle5.open - candle5.low) < 0.25 && !advised && !disableTrading){
+  if (rsi5.result < 30 && candle5.open > candle5.low && candle5.open - candle5.low > candle5.low * 0.006 && candle5.open > candle5.close && (candle5.open - candle5.close)/(candle5.open - candle5.low) < 0.25 && !advised && !disableTrading){
     this.buy('Buy because RSI less than 30 and candle is a hammer');
     config.currentIndicatorValues.rsi_history = rsi5History;
   }
@@ -200,7 +212,7 @@ strat.onCommand = function(cmd) {
   if (command == 'error'){
   cmd.handled = true;
   cmd.response = "This will generate an error message, let's see if message is shown in Telegram";
-  throw new Error("Manual restart from Telegram"); 
+  throw new Error("Manual restart from Telegram");
   }
   if (command == 'buy') {
   cmd.handled = true;
