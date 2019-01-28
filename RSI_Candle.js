@@ -121,10 +121,10 @@ strat.update5 = function(candle) {
 // update or not.
 strat.check = function() {
 
-  // Sell if Gekko starts out hodling a bag
-  if (config.IssueState.trades == 0 && config.IssueState.exposed) {
-    this.sell('Gekko restarted hodling a bag, getting rid of it.');
-  }
+  // // Sell if Gekko starts out hodling a bag
+  // if (config.IssueState.trades == 0 && config.IssueState.exposed) {
+  //   this.sell('Gekko restarted hodling a bag, getting rid of it.');
+  // }
 
   if (config.IssueState.rejected){
     if (waitForRejectedRetry == 0){
