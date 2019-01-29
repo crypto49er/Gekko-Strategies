@@ -1,4 +1,6 @@
-// RSI + Candle
+// RSI + Candle 
+// Created by Crypto49er
+// Version 2 (Version 1 was made for my heavily modded version of Gekko, version 2 is for based version of Gekko)
 //
 // This strategy is designed for 5 minute candles.
 // Idea 1: When RSI drops aggressively (>18 points) and goes way below 30 (< 12), there's an 
@@ -121,39 +123,15 @@ strat.update5 = function(candle) {
 // update or not.
 strat.check = function() {
 
-  // // Sell if Gekko starts out hodling a bag
-  // if (config.IssueState.trades == 0 && config.IssueState.exposed) {
-  //   this.sell('Gekko restarted hodling a bag, getting rid of it.');
-  // }
-
-  if (config.IssueState.rejected){
-    if (waitForRejectedRetry == 0){
-      if (config.IssueState.side == 'buy'){
-        this.sell('Previous buy order rejected - Selling to create new buy order'); // To reset previous buy order by issuing a sell order
-        this.buy('Reissued buy order because previous buy order was rejected');
-      } else {
-        this.buy('Previous sell order rejected - Buying to create new sell order'); // To reset previous sell order by issuing a buy order
-        this.sell('Previous sell order rejected - Issuing new sell order');
-      }
-      waitForRejectedRetry = 11;
-    }
-    if (waitForRejectedRetry > 0) {
-      waitForRejectedRetry--;
-    }
- 
-  }
-
   // Buy when RSI < 12 and RSI dropped more than 18 points compared to previous 2 candles
   if (rsi5.result < 12 && (rsi5History[7] > rsi5.result + 18 || rsi5History[8] > rsi5.result + 18 ) && !advised && !disableTrading){
       this.buy('Buy because RSI less than 12');
-      config.currentIndicatorValues.rsi_history = rsi5History;
   }
 
   
   // //Buy when RSI < 30 and candle is a hammer
   if (rsi5.result < 30 && candle5.open > candle5.low && candle5.open - candle5.low > candle5.low * 0.006 && candle5.open > candle5.close && (candle5.open - candle5.close)/(candle5.open - candle5.low) < 0.25 && !advised && !disableTrading){
     this.buy('Buy because RSI less than 30 and candle is a hammer');
-    config.currentIndicatorValues.rsi_history = rsi5History;
   }
 
   // Sell when RSI > 70
@@ -170,16 +148,14 @@ strat.check = function() {
 
 strat.sell = function(reason) {
   this.advice('short');
-  //log.remote(reason);
-  config.sellReason.message = reason;
+  log.info(reason);
   advised = false;
   buyPrice = 0;
 }
 
 strat.buy = function(reason) {
   this.advice('long');
-  //log.remote(reason);
-  config.buyReason.message = reason;
+  log.info(reason);
   advised = true;
   buyPrice = currentPrice;
 }
@@ -195,25 +171,15 @@ strat.onCommand = function(cmd) {
       cmd.response = config.watch.currency + "/" + config.watch.asset +
       "\nPrice: " + currentPrice +
       "\nRSI: " + rsi5.result.toFixed(2) +
-      "\nRSI History: " + rsi5History[7].toFixed(2) + ", " + rsi5History[8].toFixed(2) + ", " + rsi5History[9].toFixed(2) +
-      "\nPortfolio: ";
-      
-      var i;
-      for (i = 0; i < config.currentIndicatorValues.portfolio.length; i++){
-        cmd.response = cmd.response + "\n" + config.currentIndicatorValues.portfolio[i].name + ": " + config.currentIndicatorValues.portfolio[i].amount;
-      }
+      "\nRSI History: " + rsi5History[7].toFixed(2) + ", " + rsi5History[8].toFixed(2) + ", " + rsi5History[9].toFixed(2);
   }
   if (command == 'help') {
   cmd.handled = true;
       cmd.response = "Supported commands: \n\n /buy - buy at next candle" + 
       "\n /sell - sell at next candle " + 
-      "\n /status - show RSI and current portfolio";
+      "\n /status - show RSI and current portfolio" +
+      "\n /stop - disable buying";
     }
-  if (command == 'error'){
-  cmd.handled = true;
-  cmd.response = "This will generate an error message, let's see if message is shown in Telegram";
-  throw new Error("Manual restart from Telegram");
-  }
   if (command == 'buy') {
   cmd.handled = true;
   this.buy('Manual buy order from telegram');
